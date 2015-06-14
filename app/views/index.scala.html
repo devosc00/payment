@@ -1,0 +1,44 @@
+@(signature: String, url: String)
+
+@main("Payu Payment") {
+
+    @*<form id="form" role="form" method="post" action="@routes.Application.sendForm()" >*@
+        @*<form method="post" action="https://secure.payu.com/api/v2_1/orders">*@
+        @*<input class="form-control" name="continueUrl" value="http://localhost/continue" />*@
+        @*<input class="form-control" name="currencyCode" value="PLN" />*@
+        @*<input class="form-control" name="description" value="Order description" />*@
+        @*<input class="form-control" name="notifyUrl" value="http://shop.url/notify" />*@
+        @*<input class="form-control" name="merchantPosId" value="145227" />*@
+        @*<input class="form-control" name="customerIp" value="123.123.123.123" />*@
+        @*<input class="form-control" name="products[0].name" value="Product 1" />*@
+        @*<input class="form-control" name="products[0].quantity" value="1" />*@
+        @*<input class="form-control" name="products[0].unitPrice" value="1000" />*@
+        @*<input class="form-control" name="totalAmount" value="1000" />*@
+           @*<input type="hidden" name="OpenPayu-Signature" type="hidden" value="sender=145227;algorithm=MD5;signature=2bfc375962fd62f6c3eb798626eb862c">*@
+       @*<input type="hidden" name="OpenPayu-Signature" value="sender=192194;algorithm=MD5;signature=b7468463a1dbab6fb453b11ad7f4ddf1" />*@
+        @*<div>*@
+            @*<button type="submit" class="btn btn-default" formtarget="_blank" />*@
+            @*<img src="@routes.Assets.versioned("images/payu.png")">*@
+        @*</div>*@
+    @*</form>*@
+    @*<form id="form" method="POST" action="https://secure.payu.com/api/v2_1/orders">*@
+    <form id="form" role="form" method="post" action=@url>
+        <input class="hidden" name="customerIp" value="123.123.123.123">
+        <input class="hidden" name="merchantPosId" value="192231">
+        <input class="form-control" name="description" value="Opis zamówienia">
+        <input class="form-control" name="totalAmount" value="1000">
+        <input class="form-control" name="currencyCode" value="PLN">
+        <input class="form-control" name="products[0].name" value="Produkt 1">
+        <input class="form-control" name="products[0].unitPrice" value="1000">
+        <input class="form-control" name="products[0].quantity" value="1">
+        <input class="hidden" name="notifyUrl" value="http://shop.url/notify" >
+        <input class="hidden" name="continueUrl" value="http://shop.url/continue" >
+        <input type="hidden" name="OpenPayu-Signature" value=@signature>
+        <button id="send" formtarget="_blank">Płacę z PayU</button>
+    </form>
+
+    <div>
+        <button id="but" class="btn btn-default">Submit</button>
+    </div>
+
+}
