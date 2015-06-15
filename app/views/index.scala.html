@@ -1,4 +1,4 @@
-@(signature: String, url: String)
+@()
 
 @main("Payu Payment") {
 
@@ -22,21 +22,25 @@
         @*</div>*@
     @*</form>*@
     @*<form id="form" method="POST" action="https://secure.payu.com/api/v2_1/orders">*@
-    <form id="form" role="form" method="post" action=@url>
+    <form id="form" role="form" method="post" action="@routes.Application.sendForm()">
         <input class="hidden" name="customerIp" value="123.123.123.123">
         <input class="hidden" name="merchantPosId" value="192231">
-        <input class="form-control" name="description" value="Opis zamówienia">
-        <input class="form-control" name="totalAmount" value="1000">
-        <input class="form-control" name="currencyCode" value="PLN">
-        <input class="form-control" name="products[0].name" value="Produkt 1">
-        <input class="form-control" name="products[0].unitPrice" value="1000">
+        <input id="description" class="hidden" name="description" value="Opis zamówienia">
+        <input class="hidden" name="currencyCode" value="PLN">
+        <label for="materialName">Nazwa materiału</label>
+        <input id="materialName" class="form-control" name="products[0].name" value="mapa">
+        <label for="materialPrice">Cena jednostkowa</label>
+        <input id="materialPrice" class="form-control" name="products[0].unitPrice" value="10">
+        <label for="materialQuantity">Liczba</label>
         <input class="form-control" name="products[0].quantity" value="1">
+        <input id="totalPay" class="hidden" name="totalAmount" value="10">
         <input class="hidden" name="notifyUrl" value="http://shop.url/notify" >
         <input class="hidden" name="continueUrl" value="http://shop.url/continue" >
-        <input type="hidden" name="OpenPayu-Signature" value=@signature>
         <button id="send" formtarget="_blank">Płacę z PayU</button>
     </form>
-
+    <div>
+        <button id="add" class="btn btn-success">Add material</button>
+    </div>
     <div>
         <button id="but" class="btn btn-default">Submit</button>
     </div>

@@ -6,9 +6,9 @@ package models;
 public class Toolkit {
 
     public static class Material {
-        String name;
-        int unitPrice;
-        int quantity;
+       public  String name;
+        public int unitPrice;
+        public int quantity;
 
     }
 

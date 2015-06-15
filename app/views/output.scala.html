@@ -1,16 +1,16 @@
-@(signature: String)
+@(signature: String, totalAmount: String, materialName: String, unitPrice: String, quantity: String)
 <form id="form" role="form" method="post" action="https://secure.payu.com/api/v2_1/orders" >
     <input type="hidden" name="customerIp" value="123.123.123.123">
     <input type="hidden" name="merchantPosId" value="192231">
     <input type="hidden" name="description" value="Opis zamówienia">
-    <input type="hidden" name="totalAmount" value="1000">
+    <input type="hidden" name="totalAmount" value=@totalAmount >
     <input type="hidden" name="currencyCode" value="PLN">
-    <input type="hidden" name="products[0].name" value="Produkt 1">
-    <input type="hidden" name="products[0].unitPrice" value="1000">
-    <input type="hidden" name="products[0].quantity" value="1">
+    <input type="hidden" name="products[0].name" value=@materialName >
+    <input type="hidden" name="products[0].unitPrice" value=@unitPrice >
+    <input type="hidden" name="products[0].quantity" value=@quantity >
     <input type="hidden" name="notifyUrl" value="http://shop.url/notify" >
     <input type="hidden" name="continueUrl" value="http://shop.url/continue" >
-    <input type="hidden" name="OpenPayu-Signature" value=@signature>
+    <input type="hidden" name="OpenPayu-Signature" value=@signature >
     <button type="submit" formtarget="_blank">Płacę z PayU</button>
 </form>
 

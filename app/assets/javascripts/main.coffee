@@ -1,4 +1,5 @@
 $ ->
+  materialsArray = []
 
   $("#but").click ->
     serverRoutes.controllers.Application.sendJsonOrder().ajax
@@ -21,12 +22,23 @@ $ ->
     error: (resp) ->
       console.log "error" + resp
 
-#  $("#send").click ->
-#    serverRoutes.controllers.Application.sendForm().ajax
-#      contentType: "application/json"
-#      data: $("#form").serialize()
-#      success: (resp) ->
-#        $('form').append("<input type='hidden' name='OpenPayu-Signature'>").attr("value", resp)
-#        $('form').submit
-#        console.log "success" + resp
-#      error: (resp) -> console.log "error" + resp
+
+
+  $("#but").click ->
+    serverRoutes.controllers.Application.sendDataToFormBuilder().ajax
+      contentType: "application/json"
+      data: JSON.stringify
+        form: materialsArray
+        console.log "send clicked"
+      success: (resp) ->
+        $('form').append("<input type='hidden' name='OpenPayu-Signature'>").attr("value", resp)
+        $('form').submit
+        console.log "success " + resp
+      error: (resp) -> console.log "error" + resp
+
+  $("#add").click ->
+    product = []
+    for material, index in $("#form").find("input[name^='products']")
+      product.push material.value
+    materialsArray.push product
+    console.log materialsArray

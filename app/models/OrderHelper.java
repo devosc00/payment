@@ -16,6 +16,7 @@ public class OrderHelper {
     static String testSecondKey = "13a980d4f851f3d9a1cfc792fb1f5e50";
     static String posId = "192231";
     static String secondKey = "5cfc60882859e248b9d81b026a0ce1ee";
+    public List<Integer> pricesList = new ArrayList<>();
 
     public static class Order {
        public String url;
@@ -73,6 +74,46 @@ public class OrderHelper {
         byte[] bytes = content.getBytes();
         String authVal = "Basic " + new String(new Base64().encode(bytes));
         return authVal;
+    }
+
+    public String convertPrice (String price) {
+        String formatedPrice = price.replace(",", "");
+        return formatedPrice;
+    }
+
+    public void storePartialPrices(String amount, String price) {
+        int iprice = Integer.parseInt(convertPrice(price));
+        int iamount = Integer.parseInt(amount);
+        int sum = iprice * iamount * 100;
+        pricesList.add(sum);
+    }
+
+    public String getTotalPrice () {
+        Integer totalPrice = 0;
+        for (int prices : pricesList) {
+            totalPrice += prices;
+        }
+        return totalPrice.toString();
+    }
+
+    public String buildFormBody (JsonNode materials, String totalPrice){
+        StringBuilder formBody = new StringBuilder();
+
+        result.append("<id_client>")     .append(clientId)   .append("</id_client>");
+        result.append("<id_trans>")      .append(transId)    .append("</id_trans>");
+        result.append("<date_valid>")    .append(validDate)  .append("</date_valid>");
+        result.append("<amount>")        .append(kirAmount)  .append("</amount>");
+        result.append("<currency>")      .append("PLN")      .append("</currency>");
+        result.append("<email>")         .append(eMail)      .append("</email>");
+        result.append("<account>")       .append(account)    .append("</account>");
+        result.append("<accname>")       .append(accountName).append("</accname>");
+        result.append("<backpage>")      .append(okPageUrl)  .append("</backpage>");
+        result.append("<backpagereject>").append(failPageUrl).append("</backpagereject>");
+
+        return result.toString();
+    }
+        formBody.append("<customerId>");
+        return formBody.toString();
     }
 
     public JsonNode getJsonNodeTest() {

@@ -1,8 +1,11 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import models.OrderHelper;
 import models.SendJsonOrder;
+import models.Toolkit;
+import play.api.libs.json.Json;
 import play.data.DynamicForm;
 import play.data.Form;
 import play.mvc.Controller;
@@ -17,7 +20,7 @@ public class Application extends Controller {
 
     public static Result index() {
 //        Form<Order> orderForm = Form.form(Order.class).fill(new Order("127.0.0.1", "4143", "description", "1", "PLN", productList , "continue/url", "notify/url"));
-        return ok(index.render("", "@routes.Application.sendForm()"));
+        return ok(index.render());
     }
 
     public static Result sendJsonOrder() {
@@ -32,10 +35,30 @@ public class Application extends Controller {
         DynamicForm dynamicForm = Form.form().bindFromRequest();
         OrderHelper orderHelper = new OrderHelper();
         String formSignature = orderHelper.getFormSignature(dynamicForm.data());
-//        System.out.println(formSignature);
-        return ok(index.render(formSignature, "https://secure.payu.com/api/v2_1/orders"));
+        System.out.println(dynamicForm.data());
+        String productName = dynamicForm.data().get("products[0].name");
+        return ok(index.render());
+
+//                ok(output.render(formSignature,
+//                dynamicForm.data().get("totalAmount"),
+//                productName,
+//                dynamicForm.data().get("products[0].unitPrice"),
+//                dynamicForm.data().get("products[0].quantity")));
     }
 
+
+    public static Result sendDataToFormBuilder () {
+        JsonNode json = request().body().asJson();
+        JsonNode materialArray = json.get("form");
+        OrderHelper orderHelper = new OrderHelper();
+        for (JsonNode material: materialArray) {
+//            System.out.println(material.get(0).asText());
+            orderHelper.storePartialPrices(material.get(1).asText(),(material.get(2).asText()));
+        }
+        String totalPrice = orderHelper.getTotalPrice();
+        System.out.println(materialArray);
+        return ok(totalPrice);
+    }
 
 }
 
