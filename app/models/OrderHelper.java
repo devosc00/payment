@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import play.Logger;
+import play.data.DynamicForm;
+import play.data.Form;
 
 import java.util.*;
 
@@ -19,8 +21,8 @@ public class OrderHelper {
     public List<Integer> pricesList = new ArrayList<>();
 
     public static class Order {
-       public String url;
-       public JsonNode node;
+        public String url;
+        public JsonNode node;
 
         public Order(String url, JsonNode node) {
             this.url = url;
@@ -29,8 +31,8 @@ public class OrderHelper {
     }
 
     public static class OrderString {
-         public String url;
-         public String order;
+        public String url;
+        public String order;
         public String header;
 
         public OrderString(String url, String order, String header) {
@@ -99,22 +101,30 @@ public class OrderHelper {
     public String buildFormBody (JsonNode materials, String totalPrice){
         StringBuilder formBody = new StringBuilder();
 
-        result.append("<id_client>")     .append(clientId)   .append("</id_client>");
-        result.append("<id_trans>")      .append(transId)    .append("</id_trans>");
-        result.append("<date_valid>")    .append(validDate)  .append("</date_valid>");
-        result.append("<amount>")        .append(kirAmount)  .append("</amount>");
-        result.append("<currency>")      .append("PLN")      .append("</currency>");
-        result.append("<email>")         .append(eMail)      .append("</email>");
-        result.append("<account>")       .append(account)    .append("</account>");
-        result.append("<accname>")       .append(accountName).append("</accname>");
-        result.append("<backpage>")      .append(okPageUrl)  .append("</backpage>");
-        result.append("<backpagereject>").append(failPageUrl).append("</backpagereject>");
-
-        return result.toString();
-    }
-        formBody.append("<customerId>");
+        formBody.append("<input ").append("type=\"hidden\"").append(" name=\"customerIp\"")   .append(" value=\"").append("123.123.123\">");
+        formBody.append("<input ").append("type=\"hidden\"").append(" name=\"merchantPosId\"").append(" value=\"").append(posId).append("\"").append(">");
+        formBody.append("<input ").append("type=\"hidden\"").append(" name=\"description\"")  .append(" value=\"").append("description\">");
+        formBody.append("<input ").append("type=\"hidden\"").append(" name=\"totalAmount\"")  .append(" value=\"").append(totalPrice).append("\"").append(">");
+        formBody.append("<input ").append("type=\"hidden\"").append(" name=\"currencyCode\"") .append(" value=\"").append("PLN\">");
+        formBody.append("<input ").append("type=\"hidden\"").append(" name=\"notifyUrl\"")    .append(" value=\"").append("http://shop.com/notify\">");
+        formBody.append("<input ").append("type=\"hidden\"").append(" name=\"continueUrl\"")  .append(" value=\"").append("Http://shop.com/continue\">");
+        int index = 0;
+        for (JsonNode material: materials) {
+            formBody.append("<input ").append("type=\"hidden\"").append(" name=").append("\"products[").append(index + "]").append(".name\"")
+                    .append(" value=").append("\"").append(material.get(0).asText()).append("\"").append(">");
+            formBody.append("<input ").append("type=\"hidden\"").append(" name=").append("\"products[").append(index + "]").append(".unitPrice\"")
+                    .append(" value=").append("\"").append(material.get(1).asText()).append("\"").append(">");
+            formBody.append("<input ").append("type=\"hidden\"").append(" name=").append("\"products[").append(index + "]").append(".quantity\"")
+                    .append(" value=").append("\"").append(material.get(2).asText()).append("\"").append(">");
+            index ++;
+        }
+        System.out.println(formBody.toString());
+        String form = formBody.toString();
+        Map<String, String> prepareToSort = DynamicForm.form().bindFromRequest(form).data();
+        System.out.println(prepareToSort);
         return formBody.toString();
     }
+
 
     public JsonNode getJsonNodeTest() {
         ObjectMapper objectMapper = new ObjectMapper();

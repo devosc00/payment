@@ -37,13 +37,13 @@ public class Application extends Controller {
         String formSignature = orderHelper.getFormSignature(dynamicForm.data());
         System.out.println(dynamicForm.data());
         String productName = dynamicForm.data().get("products[0].name");
-        return ok(index.render());
+        return //ok(index.render());
 
-//                ok(output.render(formSignature,
-//                dynamicForm.data().get("totalAmount"),
-//                productName,
-//                dynamicForm.data().get("products[0].unitPrice"),
-//                dynamicForm.data().get("products[0].quantity")));
+                ok(output.render(formSignature,
+                dynamicForm.data().get("totalAmount"),
+                productName,
+                dynamicForm.data().get("products[0].unitPrice"),
+                dynamicForm.data().get("products[0].quantity")));
     }
 
 
@@ -56,6 +56,7 @@ public class Application extends Controller {
             orderHelper.storePartialPrices(material.get(1).asText(),(material.get(2).asText()));
         }
         String totalPrice = orderHelper.getTotalPrice();
+        orderHelper.buildFormBody(materialArray, totalPrice);
         System.out.println(materialArray);
         return ok(totalPrice);
     }
