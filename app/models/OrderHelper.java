@@ -10,6 +10,8 @@ import play.data.Form;
 import play.mvc.BodyParser;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by rmasal on 2015-06-09.
@@ -67,10 +69,10 @@ public class OrderHelper {
         return result.toString();
     }
 
-    public String digestMD5(String parameters) {
-        return DigestUtils.md5Hex(parameters);
+        public String digestMD5(String parameters) {
+            return DigestUtils.md5Hex(parameters);
 
-    }
+        }
 
     public String getHeaderSignature() {
         String content = (new StringBuffer(posId).append(":").append(secondKey)).toString();
@@ -123,7 +125,19 @@ public class OrderHelper {
         System.out.println(formBody.toString());
         String form = formBody.toString();
 //        BodyParser.MultipartFormData prepareToSort = Form.form().bindFromRequest(form);
-//        System.out.println(prepareToSort);
+        Pattern pattern = Pattern.compile("(\\w+)=\"*((?<=\")[^\"]+(?=\")|([^\\s]+))\"*");
+
+        Matcher matcher = pattern.matcher(form);
+
+        Map<String, String> map;
+        while(matcher.find()){
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append(matcher.group(1)).append("=").append(matcher.group(2));
+            String str = stringBuilder.toString().replaceAll("\\btype=hidden\\b", "");
+            str = str.replaceAll("\\btype=hidden\\b", "");
+            System.out.println(str);
+        }
+//        System.out.println(macher.toString());
         return formBody.toString();
     }
 

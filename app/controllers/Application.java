@@ -36,7 +36,7 @@ public class Application extends Controller {
         DynamicForm dynamicForm = Form.form().bindFromRequest();
         OrderHelper orderHelper = new OrderHelper();
         String formSignature = orderHelper.getFormSignature(dynamicForm.data());
-        System.out.println(request);
+        System.out.println(dynamicForm.data());
         String productName = dynamicForm.data().get("products[0].name");
         return //ok(index.render());
 
@@ -58,7 +58,7 @@ public class Application extends Controller {
         }
         String totalPrice = orderHelper.getTotalPrice();
         orderHelper.buildFormBody(materialArray, totalPrice);
-        System.out.println(materialArray);
+//        System.out.println(materialArray);
         return ok(totalPrice);
     }
 
