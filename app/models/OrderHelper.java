@@ -7,6 +7,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import play.Logger;
 import play.data.DynamicForm;
 import play.data.Form;
+import play.mvc.BodyParser;
 
 import java.util.*;
 
@@ -100,7 +101,7 @@ public class OrderHelper {
 
     public String buildFormBody (JsonNode materials, String totalPrice){
         StringBuilder formBody = new StringBuilder();
-
+        formBody.append("<form>");
         formBody.append("<input ").append("type=\"hidden\"").append(" name=\"customerIp\"")   .append(" value=\"").append("123.123.123\">");
         formBody.append("<input ").append("type=\"hidden\"").append(" name=\"merchantPosId\"").append(" value=\"").append(posId).append("\"").append(">");
         formBody.append("<input ").append("type=\"hidden\"").append(" name=\"description\"")  .append(" value=\"").append("description\">");
@@ -118,10 +119,11 @@ public class OrderHelper {
                     .append(" value=").append("\"").append(material.get(2).asText()).append("\"").append(">");
             index ++;
         }
+        formBody.append("</form>");
         System.out.println(formBody.toString());
         String form = formBody.toString();
-        Map<String, String> prepareToSort = DynamicForm.form().bindFromRequest(form).data();
-        System.out.println(prepareToSort);
+//        BodyParser.MultipartFormData prepareToSort = Form.form().bindFromRequest(form);
+//        System.out.println(prepareToSort);
         return formBody.toString();
     }
 

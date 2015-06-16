@@ -32,10 +32,11 @@ public class Application extends Controller {
     }
 
     public static Result sendForm () {
+        String request = request().body().asText();
         DynamicForm dynamicForm = Form.form().bindFromRequest();
         OrderHelper orderHelper = new OrderHelper();
         String formSignature = orderHelper.getFormSignature(dynamicForm.data());
-        System.out.println(dynamicForm.data());
+        System.out.println(request);
         String productName = dynamicForm.data().get("products[0].name");
         return //ok(index.render());
 
