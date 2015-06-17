@@ -2,6 +2,7 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.OrderHelper;
 import models.SendJsonOrder;
 import models.Toolkit;
@@ -54,12 +55,16 @@ public class Application extends Controller {
         OrderHelper orderHelper = new OrderHelper();
         for (JsonNode material: materialArray) {
 //            System.out.println(material.get(0).asText());
-            orderHelper.storePartialPrices(material.get(1).asText(),(material.get(2).asText()));
+            orderHelper.storePartialPrices(material.get(1).asText(), (material.get(2).asText()));
         }
         String totalPrice = orderHelper.getTotalPrice();
-        orderHelper.buildFormBody(materialArray, totalPrice);
+        String formBody = orderHelper.buildFormBody(materialArray, totalPrice);
+        String signature = orderHelper.getFormSignature(orderHelper.bulildDataForSignature(materialArray));
 //        System.out.println(materialArray);
-        return ok(totalPrice);
+        ObjectNode result = play.libs.Json.newObject();
+        result.put("form", formBody);
+        result.put("signature", signature);
+        return ok(result);
     }
 
 }

@@ -31,9 +31,12 @@ $ ->
         form: materialsArray
         console.log "send clicked"
       success: (resp) ->
-        $('form').append("<input type='hidden' name='OpenPayu-Signature'>").attr("value", resp)
-        $('form').submit
-        console.log "success " + resp
+        form = $("<form>").prop("name", "paymentForm").prop("method", "POST").prop("action", "https://secure.payu.com/api/v2_1/orders").css("display", "none")
+        $("body").append form
+        formBody = resp.form
+        transaction = $("<input>").prop("type", "hidden").prop("name", "OpenPayu-Signature").prop("value", resp.signature)
+        form.append(transaction).append(formBody).submit()
+        console.log "success " + resp.form + "  " + resp.signature
       error: (resp) -> console.log "error" + resp
 
   $("#add").click ->

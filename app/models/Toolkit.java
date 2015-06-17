@@ -6,10 +6,13 @@ package models;
 public class Toolkit {
 
     public static class Material {
-       public  String name;
-        public int unitPrice;
-        public int quantity;
+       public  String form;
+        public String signature;
 
+        public Material(String form, String signature) {
+            this.form = form;
+            this.signature = signature;
+        }
     }
 
 }

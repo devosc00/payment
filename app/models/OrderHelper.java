@@ -103,7 +103,6 @@ public class OrderHelper {
 
     public String buildFormBody (JsonNode materials, String totalPrice){
         StringBuilder formBody = new StringBuilder();
-        formBody.append("<form>");
         formBody.append("<input ").append("type=\"hidden\"").append(" name=\"customerIp\"")   .append(" value=\"").append("123.123.123\">");
         formBody.append("<input ").append("type=\"hidden\"").append(" name=\"merchantPosId\"").append(" value=\"").append(posId).append("\"").append(">");
         formBody.append("<input ").append("type=\"hidden\"").append(" name=\"description\"")  .append(" value=\"").append("description\">");
@@ -121,7 +120,6 @@ public class OrderHelper {
                     .append(" value=").append("\"").append(material.get(2).asText()).append("\"").append(">");
             index ++;
         }
-        formBody.append("</form>");
         System.out.println(formBody.toString());
         String form = formBody.toString();
 //        BodyParser.MultipartFormData prepareToSort = Form.form().bindFromRequest(form);
@@ -141,6 +139,24 @@ public class OrderHelper {
         return formBody.toString();
     }
 
+    public Map <String, String> bulildDataForSignature (JsonNode jsonNode) {
+        Map <String, String> mapData = new HashMap<>();
+        mapData.put("customerIp", "123.123.123.123");
+        mapData.put("merchantPosId", posId);
+        mapData.put("description", "description");
+        mapData.put("totalAmount", getTotalPrice());
+        mapData.put("currencyCode", "PLN");
+        mapData.put("natifyUrl", "http://shop.com/notify");
+        mapData.put("continueUrl", "Http://shop.com/continue");
+        int index = 0;
+        for (JsonNode node: jsonNode) {
+            mapData.put("products[" + index + "].name", node.get(0).asText());
+            mapData.put("products[" + index + "].unitPrice", node.get(1).asText());
+            mapData.put("products[" + index + "].quantity", node.get(2).asText());
+        index ++;
+        }
+        return mapData;
+    }
 
     public JsonNode getJsonNodeTest() {
         ObjectMapper objectMapper = new ObjectMapper();
