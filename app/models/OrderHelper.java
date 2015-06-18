@@ -17,33 +17,11 @@ import java.util.regex.Pattern;
  * Created by rmasal on 2015-06-09.
  */
 public class OrderHelper {
-    static String testPosId = "145227";
-    static String testSecondKey = "13a980d4f851f3d9a1cfc792fb1f5e50";
+//    static String testPosId = "145227";
+//    static String testSecondKey = "13a980d4f851f3d9a1cfc792fb1f5e50";
     static String posId = "192231";
     static String secondKey = "5cfc60882859e248b9d81b026a0ce1ee";
     public List<Integer> pricesList = new ArrayList<>();
-
-    public static class Order {
-        public String url;
-        public JsonNode node;
-
-        public Order(String url, JsonNode node) {
-            this.url = url;
-            this.node = node;
-        }
-    }
-
-    public static class OrderString {
-        public String url;
-        public String order;
-        public String header;
-
-        public OrderString(String url, String order, String header) {
-            this.url = url;
-            this.order = order;
-            this.header = header;
-        }
-    }
 
     public List<String> sortValuesByItsName(Map form) {
         List<String> valuesList = new ArrayList<>();
@@ -81,77 +59,81 @@ public class OrderHelper {
         return authVal;
     }
 
-    public String convertPrice (String price) {
-        String formatedPrice = price.replace(",", "");
-        return formatedPrice;
-    }
 
     public void storePartialPrices(String amount, String price) {
-        int iprice = Integer.parseInt(convertPrice(price));
+        int iprice = Integer.parseInt(price);
+        iprice = iprice * 100;
         int iamount = Integer.parseInt(amount);
-        int sum = iprice * iamount * 100;
+        int sum = iprice * iamount;
         pricesList.add(sum);
     }
 
     public String getTotalPrice () {
-        Integer totalPrice = 0;
+        Integer price = 0;
         for (int prices : pricesList) {
-            totalPrice += prices;
+            price += prices;
         }
-        return totalPrice.toString();
+            price.toString();
+        return price.toString();
     }
 
     public String buildFormBody (JsonNode materials, String totalPrice){
         StringBuilder formBody = new StringBuilder();
-        formBody.append("<input ").append("type=\"hidden\"").append(" name=\"customerIp\"")   .append(" value=\"").append("123.123.123\">");
+        formBody.append("<input ").append("type=\"hidden\"").append(" name=\"customerIp\"")   .append(" value=\"").append("123.123.123.123\">");
         formBody.append("<input ").append("type=\"hidden\"").append(" name=\"merchantPosId\"").append(" value=\"").append(posId).append("\"").append(">");
         formBody.append("<input ").append("type=\"hidden\"").append(" name=\"description\"")  .append(" value=\"").append("description\">");
         formBody.append("<input ").append("type=\"hidden\"").append(" name=\"totalAmount\"")  .append(" value=\"").append(totalPrice).append("\"").append(">");
         formBody.append("<input ").append("type=\"hidden\"").append(" name=\"currencyCode\"") .append(" value=\"").append("PLN\">");
         formBody.append("<input ").append("type=\"hidden\"").append(" name=\"notifyUrl\"")    .append(" value=\"").append("http://shop.com/notify\">");
-        formBody.append("<input ").append("type=\"hidden\"").append(" name=\"continueUrl\"")  .append(" value=\"").append("Http://shop.com/continue\">");
+        formBody.append("<input ").append("type=\"hidden\"").append(" name=\"continueUrl\"")  .append(" value=\"").append("http://google.com\">");
         int index = 0;
         for (JsonNode material: materials) {
             formBody.append("<input ").append("type=\"hidden\"").append(" name=").append("\"products[").append(index + "]").append(".name\"")
                     .append(" value=").append("\"").append(material.get(0).asText()).append("\"").append(">");
             formBody.append("<input ").append("type=\"hidden\"").append(" name=").append("\"products[").append(index + "]").append(".unitPrice\"")
-                    .append(" value=").append("\"").append(material.get(1).asText()).append("\"").append(">");
+                    .append(" value=").append("\"").append(getZloty(material.get(1).asText())).append("\"").append(">");
             formBody.append("<input ").append("type=\"hidden\"").append(" name=").append("\"products[").append(index + "]").append(".quantity\"")
                     .append(" value=").append("\"").append(material.get(2).asText()).append("\"").append(">");
             index ++;
         }
-        System.out.println(formBody.toString());
-        String form = formBody.toString();
+//        System.out.println(formBody.toString());
+//        String form = formBody.toString();
 //        BodyParser.MultipartFormData prepareToSort = Form.form().bindFromRequest(form);
-        Pattern pattern = Pattern.compile("(\\w+)=\"*((?<=\")[^\"]+(?=\")|([^\\s]+))\"*");
-
-        Matcher matcher = pattern.matcher(form);
-
-        Map<String, String> map;
-        while(matcher.find()){
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append(matcher.group(1)).append("=").append(matcher.group(2));
-            String str = stringBuilder.toString().replaceAll("\\btype=hidden\\b", "");
-            str = str.replaceAll("\\btype=hidden\\b", "");
-            System.out.println(str);
-        }
+//        Pattern pattern = Pattern.compile("(\\w+)=\"*((?<=\")[^\"]+(?=\")|([^\\s]+))\"*");
+//
+//        Matcher matcher = pattern.matcher(form);
+//
+//        Map<String, String> map;
+//        while(matcher.find()){
+//            StringBuilder stringBuilder = new StringBuilder();
+//            stringBuilder.append(matcher.group(1)).append("=").append(matcher.group(2));
+//            String str = stringBuilder.toString().replaceAll("\\btype=hidden\\b", "");
+//            str = str.replaceAll("\\btype=hidden\\b", "");
+//            System.out.println(str);
+//        }
 //        System.out.println(macher.toString());
         return formBody.toString();
     }
 
-    public Map <String, String> bulildDataForSignature (JsonNode jsonNode) {
+    public String getZloty (String price) {
+        Integer iprice = Integer.parseInt(price);
+        iprice = iprice * 100;
+        return iprice.toString();
+    }
+
+    public Map<String, String> bulildDataForSignature (JsonNode jsonNode) {
         Map <String, String> mapData = new HashMap<>();
         mapData.put("customerIp", "123.123.123.123");
         mapData.put("merchantPosId", posId);
         mapData.put("description", "description");
         mapData.put("totalAmount", getTotalPrice());
         mapData.put("currencyCode", "PLN");
-        mapData.put("natifyUrl", "http://shop.com/notify");
-        mapData.put("continueUrl", "Http://shop.com/continue");
+        mapData.put("notifyUrl", "http://shop.com/notify");
+        mapData.put("continueUrl", "http://google.com");
         int index = 0;
         for (JsonNode node: jsonNode) {
             mapData.put("products[" + index + "].name", node.get(0).asText());
-            mapData.put("products[" + index + "].unitPrice", node.get(1).asText());
+            mapData.put("products[" + index + "].unitPrice", getZloty(node.get(1).asText()));
             mapData.put("products[" + index + "].quantity", node.get(2).asText());
         index ++;
         }

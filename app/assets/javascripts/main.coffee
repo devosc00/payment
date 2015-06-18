@@ -35,7 +35,7 @@ $ ->
         $("body").append form
         formBody = resp.form
         transaction = $("<input>").prop("type", "hidden").prop("name", "OpenPayu-Signature").prop("value", resp.signature)
-        form.append(transaction).append(formBody).submit()
+        form.append(formBody).append(transaction).submit()
         console.log "success " + resp.form + "  " + resp.signature
       error: (resp) -> console.log "error" + resp
 
@@ -45,10 +45,3 @@ $ ->
       product.push material.value
     materialsArray.push product
     console.log materialsArray
-
-
-#    startKIRPayment: (kirData) ->
-#      form = $("<form>").prop("name", "payUForm").prop("method", "POST").prop("action", kirData.url).css("display", "none")
-#      $("body").append form
-#      transaction = $("<input>").prop("type", "hidden").prop("name", "hashtrans").prop("value", kirData.transactionHash)
-#      form.append(transaction).submit()
