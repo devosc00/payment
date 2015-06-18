@@ -2,6 +2,8 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import models.AbstractFactory;
+import models.InterfaceForAB;
 import models.OrderHelper;
 import models.SendJsonOrder;
 import play.data.DynamicForm;
@@ -57,6 +59,12 @@ public class Application extends Controller {
         result.put("form", formBody);
         result.put("signature", signature);
         return ok(result);
+    }
+
+    public static Result startFactory() {
+        InterfaceForAB A = AbstractFactory.createObject(true);
+        System.out.println("startFactory:  " + A.build());
+        return ok(A.build());
     }
 
 }
