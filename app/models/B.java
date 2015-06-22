@@ -5,8 +5,10 @@ package models;
  */
 public class B implements InterfaceForAB {
     public String build () {
+        PayByKir payByKir = PayByKir.getInstance();
         System.out.println("get B object");
-        return "B";
+        return "B: " + payByKir.payByKir;
+
     }
 
 }

@@ -6,6 +6,7 @@ import models.AbstractFactory;
 import models.InterfaceForAB;
 import models.OrderHelper;
 import models.SendJsonOrder;
+import play.Play;
 import play.data.DynamicForm;
 import play.data.Form;
 import play.mvc.Controller;
@@ -62,10 +63,19 @@ public class Application extends Controller {
     }
 
     public static Result startFactory() {
-        InterfaceForAB A = AbstractFactory.createObject(true);
-        System.out.println("startFactory:  " + A.build());
-        return ok(A.build());
+        InterfaceForAB Abstract = AbstractFactory.createObject(false);
+        System.out.println("startFactory:  " + Abstract.build());
+        return ok(Abstract.build());
     }
+
+    public static Result testOrderResponse () {
+        OrderHelper orderHelper = new OrderHelper();
+        System.out.println(Play.application().configuration().getString("payu.notifyUrl"));
+        System.out.println(orderHelper.getOrderStatus(orderHelper.getJsonNodeResponse()));
+        System.out.println(orderHelper.getHashFromSignature(orderHelper.getNotificationSignature()));
+        return orderHelper.checkSignatureHash(orderHelper.notifySignature, orderHelper.getJsonNodeResponse()) ? ok("true") : ok("false");
+    }
+
 
 }
 

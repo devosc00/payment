@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import play.Logger;
+import play.Play;
 import play.data.DynamicForm;
 import play.data.Form;
 import play.mvc.BodyParser;
@@ -22,6 +23,7 @@ public class OrderHelper {
     static String posId = "192231";
     static String secondKey = "5cfc60882859e248b9d81b026a0ce1ee";
     public List<Integer> pricesList = new ArrayList<>();
+    public String notifySignature = "c33a38d89fb60f873c039fcec3a14743";
 
     public List<String> sortValuesByItsName(Map form) {
         List<String> valuesList = new ArrayList<>();
@@ -41,16 +43,11 @@ public class OrderHelper {
             content.append(value);
         }
         content.append(secondKey);
-        result.append("signature=" + digestMD5(content.toString()) + ";");
+        result.append("signature=" + DigestUtils.md5Hex(content.toString()) + ";");
         result.append("algorithm=" + "MD5;");
         result.append("sender=" + posId);
         return result.toString();
     }
-
-        public String digestMD5(String parameters) {
-            return DigestUtils.md5Hex(parameters);
-
-        }
 
     public String getHeaderSignature() {
         String content = (new StringBuffer(posId).append(":").append(secondKey)).toString();
@@ -77,6 +74,58 @@ public class OrderHelper {
         return price.toString();
     }
 
+
+    public String getNotificationWithKey(JsonNode notification) {
+        String jsonAsString = notification.toString();
+        jsonAsString = jsonAsString + secondKey;
+        System.out.println(jsonAsString);
+        return jsonAsString;
+    }
+
+    public String getCountedSignature(String signature, JsonNode notificationBody) {
+        String hashFunction = signature.toLowerCase();
+        if (hashFunction.contains("md5")) {
+            return DigestUtils.md5Hex(getNotificationWithKey(notificationBody));
+        } else if (hashFunction.contains("sha-1")) {
+            return DigestUtils.sha1Hex(getNotificationWithKey(notificationBody));
+        } else if (hashFunction.contains("sha-256")) {
+            return DigestUtils.sha256Hex(getNotificationWithKey(notificationBody));
+        } else if (hashFunction.contains("sha-384")) {
+            return DigestUtils.sha384Hex(getNotificationWithKey(notificationBody));
+        } else if (hashFunction.contains("sha-512")) {
+            return DigestUtils.sha512Hex(getNotificationWithKey(notificationBody));
+        } else if (hashFunction.contains("sha3-256")) {
+            return "Nie wspierana funkcja skrótu sha-3";
+        } else {
+            return "Nie znaleziono funkcji skrótu";
+        }
+    }
+
+    public String getHashFromSignature (String signature) {
+        Pattern pattern = Pattern.compile("signature=(.*?);");
+        Matcher matcher = pattern.matcher(signature);
+        if (matcher.find()) {
+            return matcher.group(1);
+        } else
+        return "Nie znaleziono sygnatury.";
+    }
+
+    public String getNotificationSignature() {
+        String openPayuSignature =
+        "sender=checkout;signature=c33a38d89fb60f873c039fcec3a14743;algorithm=MD5;content=DOCUMENT";
+        return openPayuSignature;
+    }
+
+    public boolean checkSignatureHash(String signature, JsonNode json) {
+        String countSignature = getCountedSignature(getNotificationSignature(), json);
+        return countSignature.equals(signature);
+    }
+
+    public String getOrderStatus(JsonNode node) {
+        JsonNode order = node.get("order");
+        return order.get("status").asText();
+    }
+
     public String buildFormBody (JsonNode materials, String totalPrice){
         StringBuilder formBody = new StringBuilder();
         formBody.append("<input ").append("type=\"hidden\"").append(" name=\"customerIp\"")   .append(" value=\"").append("123.123.123.123\">");
@@ -84,8 +133,8 @@ public class OrderHelper {
         formBody.append("<input ").append("type=\"hidden\"").append(" name=\"description\"")  .append(" value=\"").append("description\">");
         formBody.append("<input ").append("type=\"hidden\"").append(" name=\"totalAmount\"")  .append(" value=\"").append(totalPrice).append("\"").append(">");
         formBody.append("<input ").append("type=\"hidden\"").append(" name=\"currencyCode\"") .append(" value=\"").append("PLN\">");
-        formBody.append("<input ").append("type=\"hidden\"").append(" name=\"notifyUrl\"")    .append(" value=\"").append("http://shop.com/notify\">");
-        formBody.append("<input ").append("type=\"hidden\"").append(" name=\"continueUrl\"")  .append(" value=\"").append("http://google.com\">");
+        formBody.append("<input ").append("type=\"hidden\"").append(" name=\"notifyUrl\"")    .append(" value=\"").append(Play.application().configuration().getString("payu.notifyUrl")).append("\"").append(">");
+        formBody.append("<input ").append("type=\"hidden\"").append(" name=\"continueUrl\"")  .append(" value=\"").append(Play.application().configuration().getString("payu.continueUrl")).append("\"").append(">");
         int index = 0;
         for (JsonNode material: materials) {
             formBody.append("<input ").append("type=\"hidden\"").append(" name=").append("\"products[").append(index + "]").append(".name\"")
@@ -128,8 +177,8 @@ public class OrderHelper {
         mapData.put("description", "description");
         mapData.put("totalAmount", getTotalPrice());
         mapData.put("currencyCode", "PLN");
-        mapData.put("notifyUrl", "http://shop.com/notify");
-        mapData.put("continueUrl", "http://google.com");
+        mapData.put("notifyUrl", Play.application().configuration().getString("payu.notifyUrl"));
+        mapData.put("continueUrl", Play.application().configuration().getString("payu.continueUrl"));
         int index = 0;
         for (JsonNode node: jsonNode) {
             mapData.put("products[" + index + "].name", node.get(0).asText());
@@ -163,6 +212,43 @@ public class OrderHelper {
                     "}" +
                     "]" +
                     "}");
+        } catch (Exception e) {
+            Logger.error(e.getMessage());
+        }
+        return testNode;
+    }
+
+    public JsonNode getJsonNodeResponse () {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode testNode = null;
+        try {
+            testNode = objectMapper.readTree("{" +
+                    "   \"order\":{" +
+                    "      \"orderId\":\"LDLW5N7MF4140324GUEST000P01\"," +
+                    "      \"extOrderId\":\"Id zamówienia w Twoim sklepie\"," +
+                    "      \"orderCreateDate\":\"2012-12-31T12:00:00\"," +
+                    "      \"notifyUrl\":\"http://tempuri.org/notify\"," +
+                    "      \"customerIp\":\"127.0.0.1\"," +
+                    "      \"merchantPosId\":\"{Id punktu płatności (pos_id)}\"," +
+                    "      \"description\":\"Twój opis zamówienia\"," +
+                    "      \"currencyCode\":\"PLN\"," +
+                    "      \"totalAmount\":\"200\"," +
+                    "      \"buyer\":{" +
+                    "         \"email\":\"john.doe@example.org\"," +
+                    "         \"phone\":\"111111111\"," +
+                    "         \"firstName\":\"John\"," +
+                    "         \"lastName\":\"Doe\"" +
+                    "      },\n" +
+                    "      \"products\":[" +
+                    "         {" +
+                    "               \"name\":\"Product 1\"," +
+                    "               \"unitPrice\":\"200\"," +
+                    "               \"quantity\":\"1\"" +
+                    "         }" +
+                    "      ]," +
+                    "      \"status\":\"COMPLETED\"" +
+                    "   }" +
+                    "} ");
         } catch (Exception e) {
             Logger.error(e.getMessage());
         }
