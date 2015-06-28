@@ -3,12 +3,11 @@ package models;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import play.Logger;
 import play.Play;
-import play.data.DynamicForm;
-import play.data.Form;
-import play.mvc.BodyParser;
+import org.kocakosm.pitaya.security.*;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -24,6 +23,7 @@ public class OrderHelper {
     static String secondKey = "5cfc60882859e248b9d81b026a0ce1ee";
     public List<Integer> pricesList = new ArrayList<>();
     public String notifySignature = "c33a38d89fb60f873c039fcec3a14743";
+    public String transId = "PGlkX2NsaWVudD43ODExMDk1NDIzPC9pZF9jbGllbnQ+PGlkX3RyYW5zPjAwMDAwMDAzMTM8L2lkX3RyYW5zPjxkYXRlX3ZhbGlkPjI1LTA2LTIwMTUgMTI6MzQ6MDQ8L2RhdGVfdmFsaWQ+PGFtb3VudD40Miw3MDwvYW1vdW50PjxjdXJyZW5jeT5QTE48L2N1cnJlbmN5PjxlbWFpbD48L2VtYWlsPjxhY2NvdW50Pjk0OTA0MzEwNTQ2NTE5ODExNDAyMjUwNzA0PC9hY2NvdW50PjxhY2NuYW1lPlN5c3RoZXJtLUluZm8gU0tMRVAgVGVzdG93eV5OTV42MC0xODleWlBeUG96bmFuXkNJXnVsLiBabG90b3dza2EgMjdeU1ReUG9sc2thXkNUXjwvYWNjbmFtZT48YmFja3BhZ2U+aHR0cDovLzc3LjY1LjE4LjM0OjgwODIvcGxhdG5vc2Mvc3VrY2VzPC9iYWNrcGFnZT48YmFja3BhZ2VyZWplY3Q+aHR0cDovLzc3LjY1LjE4LjM0OjgwODIvcGxhdG5vc2MvcG9yYXprYTwvYmFja3BhZ2VyZWplY3Q+PGhhc2g+Mjg1NzE3YTY0ZGQ0OGUwNTFhNDBjNWRkMWZjOTE1NjkxNzIzY2QxZDwvaGFzaD4=";
 
     public List<String> sortValuesByItsName(Map form) {
         List<String> valuesList = new ArrayList<>();
@@ -82,8 +82,8 @@ public class OrderHelper {
         return jsonAsString;
     }
 
-    public String getCountedSignature(String signature, JsonNode notificationBody) {
-        String hashFunction = signature.toLowerCase();
+    public String getCountedSignature(String header, JsonNode notificationBody) {
+        String hashFunction = header.toLowerCase();
         if (hashFunction.contains("md5")) {
             return DigestUtils.md5Hex(getNotificationWithKey(notificationBody));
         } else if (hashFunction.contains("sha-1")) {
@@ -101,10 +101,11 @@ public class OrderHelper {
         }
     }
 
-    public String getHashFromSignature (String signature) {
+    public String getHashFromHeaderSignature (String signature) {
         Pattern pattern = Pattern.compile("signature=(.*?);");
         Matcher matcher = pattern.matcher(signature);
         if (matcher.find()) {
+            System.out.println("incoming signature: " + matcher.group(1));
             return matcher.group(1);
         } else
         return "Nie znaleziono sygnatury.";
@@ -116,9 +117,10 @@ public class OrderHelper {
         return openPayuSignature;
     }
 
-    public boolean checkSignatureHash(String signature, JsonNode json) {
-        String countSignature = getCountedSignature(getNotificationSignature(), json);
-        return countSignature.equals(signature);
+    public boolean checkSignatureHash(String header, JsonNode json) {
+        String countSignature = getCountedSignature(header, json);
+        System.out.println("counted signature: " + countSignature);
+        return countSignature.equals(getHashFromHeaderSignature(header));
     }
 
     public String getOrderStatus(JsonNode node) {
@@ -164,6 +166,20 @@ public class OrderHelper {
         return formBody.toString();
     }
 
+    public boolean checkSHA3() {
+        String hash = "";
+        Digest keccakInstance = Digests.keccak256();
+        System.out.println(keccakInstance);
+        byte[] hashBytes = keccakInstance.digest("some message".getBytes());
+        try {
+          hash = Hex.encodeHexString(hashBytes);
+            System.out.println(hash);
+        } catch (Exception e) {
+            e.getMessage();
+        }
+        return (hash.equals("9df8dba3720d00bd48ad744722021ef91b035e273bccfb78660ca8df9574b086"));
+    }
+
     public String getZloty (String price) {
         Integer iprice = Integer.parseInt(price);
         iprice = iprice * 100;
@@ -174,6 +190,7 @@ public class OrderHelper {
         Map <String, String> mapData = new HashMap<>();
         mapData.put("customerIp", "123.123.123.123");
         mapData.put("merchantPosId", posId);
+        mapData.put("extOrderId", transId);
         mapData.put("description", "description");
         mapData.put("totalAmount", getTotalPrice());
         mapData.put("currencyCode", "PLN");

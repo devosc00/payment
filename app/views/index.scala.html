@@ -34,11 +34,38 @@
         <label for="materialQuantity">Liczba</label>
         <input class="form-control" name="products[0].quantity" value="1">
         <input id="totalPay" class="hidden" name="totalAmount" value="10">
-        <input class="hidden" name="notifyUrl" value="http://shop.url/notify" >
-        <input class="hidden" name="continueUrl" value="http://shop.url/continue" >
+        <input class="hidden" name="notifyUrl" value="@play.Play.application().configuration().getString("payu.notifyUrl")" >
+        <input class="hidden" name="continueUrl" value="@play.Play.application().configuration().getString("payu.continueUrl")" >
         <button id="send" formtarget="_blank">Płacę z PayU</button>
     </form>
         <body>
+            <form id="formGroup" class="form form-horizontal" method="POST">
+                <div class="form-group">
+                    <div class="col-sm-offset-3 col-sm-9">
+                        <h4>Logowanie</h4>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="username" class="col-sm-3 control-label">Użytkownik</label>
+                    <div class="col-sm-9">
+                        <input id="username" name="username" class="form-control" type="text">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="password" class="col-sm-3 control-label">Hasło</label>
+                    <div class="col-sm-9">
+                        <input id="password" name="password" class="form-control" type="password">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <div class="col-sm-offset-3 col-sm-9 checkbox">
+                        <label>
+                            <input id="changePassword" type="checkbox" value="">
+                            zmień hasło
+                        </label>
+                    </div>
+                </div>
+            </form>
 
         </body>
     <div>
@@ -50,6 +77,10 @@
 
     <div class="col-md-12">
         <a type="button" href="@routes.Application.startFactory()">Factory</a>
+    </div>
+
+    <div class="col-md-12">
+        <button id="buildForm">AddForm</button>
     </div>
 
 

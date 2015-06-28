@@ -14,6 +14,8 @@ import play.mvc.Result;
 import views.html.index;
 import views.html.output;
 
+import java.util.Map;
+
 public class Application extends Controller {
 
 
@@ -21,6 +23,7 @@ public class Application extends Controller {
 
     public static Result index() {
 //        Form<Order> orderForm = Form.form(Order.class).fill(new Order("127.0.0.1", "4143", "description", "1", "PLN", productList , "continue/url", "notify/url"));
+        System.out.println("redirect");
         return ok(index.render());
     }
 
@@ -62,18 +65,33 @@ public class Application extends Controller {
         return ok(result);
     }
 
+
     public static Result startFactory() {
         InterfaceForAB Abstract = AbstractFactory.createObject(false);
         System.out.println("startFactory:  " + Abstract.build());
-        return ok(Abstract.build());
+        OrderHelper orderHelper = new OrderHelper();
+        return orderHelper.checkSHA3() ? ok("true") : ok("false");
     }
 
     public static Result testOrderResponse () {
         OrderHelper orderHelper = new OrderHelper();
-        System.out.println(Play.application().configuration().getString("payu.notifyUrl"));
-        System.out.println(orderHelper.getOrderStatus(orderHelper.getJsonNodeResponse()));
-        System.out.println(orderHelper.getHashFromSignature(orderHelper.getNotificationSignature()));
+//        System.out.println(Play.application().configuration().getString("payu.notifyUrl"));
+//        System.out.println(orderHelper.getOrderStatus(orderHelper.getJsonNodeResponse()));
+//        System.out.println(orderHelper.getHashFromSignature(orderHelper.getNotificationSignature()));
         return orderHelper.checkSignatureHash(orderHelper.notifySignature, orderHelper.getJsonNodeResponse()) ? ok("true") : ok("false");
+    }
+
+    public static Result notification() {
+        System.out.println("notification");
+        String header = request().getHeader("OpenPayu-Signature");
+        JsonNode body = request().body().asJson();
+        OrderHelper helper = new OrderHelper();
+        boolean signature = helper.checkSignatureHash(header, body);
+        String status = helper.getOrderStatus(body);
+        System.out.println("verify signature: " + signature);
+        System.out.println("header: " + header);
+        System.out.println("status: " + status);
+        return ok();
     }
 
 

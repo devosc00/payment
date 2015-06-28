@@ -23,6 +23,6 @@ public class PaymentMock extends Controller {
         String body = request().body().asJson().asText();
         System.out.println("header: " + header);
         System.out.println("body: " + body);
-        return ok(header + body );
+        return ok(header + body);
     }
 }
